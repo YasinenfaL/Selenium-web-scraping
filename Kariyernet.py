@@ -13,9 +13,6 @@ from selenium.webdriver.common.by import By
 pd.set_option('display.max_columns', None)
 pd.set_option('display.float_format', lambda x: '%.3f' % x)
 
-# Driver path
-driver = webdriver.Chrome(executable_path="C:/Users/Yasin/selenium/chromedriver.exe")
-
 # URL of the site
 url = "https://www.kariyer.net/is-ilanlari?kw=veri%20analisti"
 # We need to let selenium know which browser I should use.
