@@ -1,44 +1,55 @@
-# Kütüphane
+# Libraries
+import pandas as pd
 from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.keys import Keys
 from bs4 import BeautifulSoup
+import requests
 import time
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 
+pd.set_option('display.max_columns', None)
+pd.set_option('display.float_format', lambda x: '%.3f' % x)
 
+# Driver path
 driver = webdriver.Chrome(executable_path="C:/Users/Yasin/selenium/chromedriver.exe")
 
-# Sitenin URl'si
+# URL of the site
 url = "https://www.kariyer.net/is-ilanlari?kw=veri%20analisti"
-# Hangi tarayıcı üzerinden işlem yapmam gerektiğini selenium bildirmemiz gerekiyor.
+# We need to let selenium know which browser I should use.
 driver = webdriver.Chrome(executable_path="C:/Users/Yasin/selenium/chromedriver.exe")
-# Belirtilen URL'ye giderek web sayfasını açar
+# Opens the web page by going to the specified URL
 driver.get(url)
-# HTML kaynak kodlarını aldık
+# We got the HTML source codes
 html = driver.page_source
-# Ayrıştırma işleme
+# Parse processing
 sp = BeautifulSoup(html, 'html.parser')
 
-# div etiketli ve class ,kad-card-info olanları bulduktan sonra bunları liste halinde döndürürüz.
+# After we find those with div tags and class ,kad-card-info , we return them as a list.
 job_cards = sp.find_all('div', {"class": "kad-card-info"})
 
+jobs = []
+
 for job in job_cards:
-    # iş ilanlarını bulduk
-    ıs_ilanı_etiketi = job.find("div", {"class": "d-flex kad-card-title-wrapper"})
-    is_ilanı = ıs_ilanı_etiketi.get_text().strip() if ıs_ilanı_etiketi else "NaN"
+    # we found job postings
+    job_div = job.find("div", {"class": "d-flex kad-card-title-wrapper"})
+    job_title = job_div.get_text().strip() if job_div else "NaN"
 
-    # şirket isimler
-    sirket_ismi_etiket = job.find("span", {"class": "kad-card-subtitle"})
-    sirket_ismi = sirket_ismi_etiket.get_text().strip() if sirket_ismi_etiket else 'NaN'
+    # company names
+    company_span = job.find("span", {"class": "kad-card-subtitle"})
+    company_names = company_span.get_text().strip() if company_span else 'NaN'
 
-    # şirketin lokasyonları
-    sirket_lokasyon_tag = job.find("div", {"class": "kad-card-location-wrapper"})
-    sirket_lokasyon = sirket_lokasyon_tag.get_text().strip() if sirket_lokasyon_tag else 'NaN'
+    # company locations
+    company_div = job.find("div", {"class": "kad-card-location-wrapper"})
+    company_locations = company_div.get_text().strip() if company_div else 'NaN'
 
-    # İstediğimiz çıktıyı elde ettik
-    print('İşin Adı : {}\n'.format(is_ilanı))
-    print('Şirket Adı : {}\n'.format(sirket_ismi))
-    print('Lokasyon Bilgisi: {}\n\n'.format(sirket_lokasyon))
+    job_dict = {'Job Name': job_title, 'Company': company_names, 'Location': company_locations}
+    jobs.append(job_dict)
+ 
+
+df = pd.DataFrame(jobs)
+print(df)
+df.to_csv('job_listings.csv', index=False)
 
